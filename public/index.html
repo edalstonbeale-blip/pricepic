@@ -68,11 +68,11 @@ go.onclick=async()=>{try{user=await api(mode,{name:name.value,email:email.value,
 card.append(el("h2",{textContent:"Snap it. Price it. Sell it."}),name,el("div",{style:"height:8px"}),email,el("div",{style:"height:8px"}),pw,el("div",{className:"row"},go),el("div",{className:"row"},sw),msg);app.append(card);draw()}
 
 /* ---------- shell ---------- */
-function tabs(on){$("#tabs").classList.toggle("hide",!on);$("#out").classList.toggle("hide",!on)}
+function tabs(on){if(!on){const a=document.querySelector('[data-t="admin"]');if(a)a.remove()}$("#tabs").classList.toggle("hide",!on);$("#out").classList.toggle("hide",!on)}
 $("#tabs").onclick=e=>{const t=e.target.dataset.t;if(t)show(t)};
 $("#out").onclick=async()=>{await api("logout",{});user=null;authView()};
-function show(t){document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));app.textContent="";({feed:feedView,scan:scanView,inbox:inboxView})[t]()}
-function start(){tabs(true);show("feed")}
+function show(t){document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));app.textContent="";({feed:feedView,scan:scanView,inbox:inboxView,admin:adminView})[t]()}
+function start(){tabs(true);if(user.admin&&!document.querySelector('[data-t="admin"]'))$("#tabs").append(el("button",{textContent:"Admin"},)),$("#tabs").lastChild.dataset.t="admin";show("feed")}
 
 /* ---------- feed (endless scroll) ---------- */
 function feedView(){let fol=false;const seg=el("div",{className:"seg"}),search=el("input",{placeholder:"Search items",type:"search"}),list=el("div"),sentinel=el("div",{className:"muted",style:"text-align:center;padding:16px"});
@@ -94,7 +94,7 @@ const acts=el("div",{className:"acts"},like);
 if(mine){const d=el("button",{className:"btn",textContent:"Remove listing"});d.onclick=async()=>{await api("posts/delete",{id:p.id});c.remove()};acts.append(d)}
 else{const o=el("button",{className:"btn",textContent:"Make offer"}),m=el("button",{className:"btn p",textContent:"Message"}),r=el("button",{className:"btn",textContent:"Report"});
 o.onclick=async()=>{const a=Number((prompt("Your offer in dollars (asking "+money(p.price)+")")||"").replace(/[^0-9.]/g,""));if(!a)return;try{await api("messages",{postId:p.id,text:"Offer: "+money(a)+" for "+(p.title||p.name)});threadView(p.id,p.sellerId,p.seller,p.name)}catch(e){alert(e.message)}};
-m.onclick=()=>threadView(p.id,p.sellerId,p.seller,p.name);r.onclick=async()=>{await api("report",{postId:p.id});r.textContent="Reported";r.disabled=true};acts.append(o,m,r);b.append(acts,el("div",{className:"note",textContent:"Stay safe: never send money to someone you can't verify, and keep payment on trusted channels."}))}
+m.onclick=()=>threadView(p.id,p.sellerId,p.seller,p.name);r.onclick=async()=>{await api("report",{postId:p.id});r.textContent="Reported";r.disabled=true};acts.append(o,m,r);if(user.admin){const x=el("button",{className:"btn",textContent:"Remove (admin)"});x.onclick=async()=>{if(confirm("Remove this listing?")){await api("posts/delete",{id:p.id});c.remove()}};acts.append(x)}b.append(acts,el("div",{className:"note",textContent:"Stay safe: never send money to someone you can't verify, and keep payment on trusted channels."}))}
 if(mine)b.append(acts);c.append(pic,b);return c}
 
 /* ---------- scan ---------- */
@@ -112,6 +112,15 @@ copy.onclick=async()=>{await navigator.clipboard.writeText(title.value+"\n\n"+de
 share.onclick=async()=>{share.disabled=true;try{const photo=await shrinkData(photos[0]);await api("posts",{name:cur.name,title:title.value,desc:desc.value,price:P[strat],condition:cur.condition,photo});msg.textContent="Shared! It's now in the feed."}catch(e){msg.className="muted err";msg.textContent=e.message;share.disabled=false}};
 res.append(el("div",{className:"muted",textContent:"Estimated resale value"}),el("div",{className:"big",textContent:money(lo)+" – "+money(hi)}),el("strong",{textContent:cur.name}),el("div",{className:"muted",textContent:[cur.brand,cur.category,cur.condition,cur.confidence&&cur.confidence+" confidence"].filter(Boolean).join(" · ")}),el("p",{textContent:cur.reasoning||""}),el("div",{className:"muted",textContent:"Your list price"}),price,bar,el("div",{className:"bl"},el("span",{textContent:"Quick sale "+money(lo)}),el("span",{textContent:"Patient "+money(hi)})),seg,el("label",{textContent:"Title"}),title,el("label",{textContent:"Description"}),desc,el("div",{className:"row"},copy,share),msg,el("p",{className:"muted",textContent:"AI estimate, not a guaranteed price."}));pr()}
 function shrinkData(d){return new Promise(ok=>{const im=new Image();im.onload=()=>{const r=Math.min(1,640/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*r;c.height=im.height*r;c.getContext("2d").drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",.7))};im.src=d})}
+
+/* ---------- admin ---------- */
+async function adminView(){app.append(el("h2",{textContent:"Reported listings"}));const box=el("div");app.append(box);
+const list=await api("admin/reports");if(!list.length)box.append(el("div",{className:"card"},el("p",{className:"muted",textContent:"No reports right now."})));
+list.forEach(r=>{const c=el("div",{className:"card post"});
+const rm=el("button",{className:"btn p",textContent:"Remove listing"}),dm=el("button",{className:"btn",textContent:"Dismiss reports"});
+rm.onclick=async()=>{if(!confirm("Remove this listing?"))return;await api("posts/delete",{id:r.id});c.remove()};
+dm.onclick=async()=>{await api("admin/dismiss",{id:r.id});c.remove()};
+c.append(el("div",{className:"pic"},el("img",{src:r.photo,alt:r.name}),el("div",{className:"tagp",textContent:money(r.price)})),el("div",{className:"body"},el("h3",{textContent:r.name}),el("div",{className:"muted",textContent:"Sold by "+r.seller+" \u00b7 "+r.count+(r.count===1?" report":" reports")}),el("div",{className:"row"},rm,dm)));box.append(c)})}
 
 /* ---------- messages ---------- */
 async function inboxView(){app.append(el("h2",{textContent:"Messages"}));const box=el("div",{className:"card"});app.append(box);const list=await api("inbox");if(!list.length)box.append(el("p",{className:"muted",textContent:"No messages yet. Message a seller from the feed."}));
