@@ -2,6 +2,8 @@
 const http = require("http"), fs = require("fs"), path = require("path"), crypto = require("crypto");
 const PORT = process.env.PORT || 3000;
 const KEY = process.env.ANTHROPIC_API_KEY;
+const ADMIN = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
+const isAdmin = (u) => !!(u && ADMIN && u.email === ADMIN);
 const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5";
 const FILE = path.join(__dirname, "data.json");
 let db = { users: {}, sessions: {}, posts: [], messages: [], reports: [], ratings: {} };
@@ -9,19 +11,12 @@ try { db = Object.assign(db, JSON.parse(fs.readFileSync(FILE, "utf8"))); } catch
 let t; const save = () => { clearTimeout(t); t = setTimeout(() => fs.writeFile(FILE, JSON.stringify(db), () => {}), 200); };
 const id = () => crypto.randomBytes(8).toString("hex");
 const hash = (pw, salt) => crypto.scryptSync(pw, salt, 32).toString("hex");
-// Master Developer Configuration
-const DEVELOPER_EMAIL = "edalstonbeale@gmail.com";
-
-function isDeveloper(email) {
-    return email === DEVELOPER_EMAIL;
-}
-
 
 const send = (res, code, obj, headers) => { res.writeHead(code, Object.assign({ "Content-Type": "application/json" }, headers)); res.end(JSON.stringify(obj)); };
 const body = (req) => new Promise((ok, no) => { let b = "", n = 0; req.on("data", c => { n += c.length; if (n > 12e6) { no(new Error("Too large")); req.destroy(); } else b += c; }); req.on("end", () => { try { ok(b ? JSON.parse(b) : {}); } catch (e) { no(e); } }); });
 const me = (req) => { const m = /sid=([a-f0-9]+)/.exec(req.headers.cookie || ""); const s = m && db.sessions[m[1]]; return s ? db.users[s] : null; };
 const login = (res, uid) => { const sid = crypto.randomBytes(24).toString("hex"); db.sessions[sid] = uid; save(); return { "Set-Cookie": `sid=${sid}; HttpOnly; SameSite=Lax; Path=/; Max-Age=2592000` }; };
-const pub = (u) => ({ id: u.id, name: u.name });
+const pub = (u) => ({ id: u.id, name: u.name, admin: isAdmin(u) });
 const rating = (sid) => { const r = Object.values(db.ratings[sid] || {}); return { avg: r.length ? Math.round(r.reduce((a, b) => a + b, 0) / r.length * 10) / 10 : 0, count: r.length }; };
 const view = (p, u) => Object.assign({}, p, { likes: undefined, likeCount: (p.likes || []).length, liked: !!(u && (p.likes || []).includes(u.id)), following: !!(u && (u.following || []).includes(p.sellerId)), sellerRating: rating(p.sellerId) });
 const clean = (s, n) => String(s || "").replace(/[<>]/g, "").trim().slice(0, n);
@@ -63,7 +58,7 @@ const routes = {
     const list = db.posts.filter(p => p.at < before && (!q || (p.name + " " + p.title).toLowerCase().includes(q)) && (!fol || (u && (u.following || []).includes(p.sellerId)))).slice(0, 8);
     send(res, 200, { posts: list.map(p => view(p, u)), next: list.length === 8 ? list[list.length - 1].at : null });
   },
-  "POST /api/posts/delete": async (req, res) => { const u = me(req); if (!u) return send(res, 401, {}); const b = await body(req); db.posts = db.posts.filter(p => !(p.id === b.id && p.sellerId === u.id)); save(); send(res, 200, {}); },
+  "POST /api/posts/delete": async (req, res) => { const u = me(req); if (!u) return send(res, 401, {}); const b = await body(req); db.posts = db.posts.filter(p => !(p.id === b.id && (p.sellerId === u.id || isAdmin(u)))); if (isAdmin(u)) db.reports = db.reports.filter(r => r.postId !== b.id); save(); send(res, 200, {}); },
   "POST /api/like": async (req, res) => { const u = me(req); if (!u) return send(res, 401, {}); const b = await body(req), p = db.posts.find(x => x.id === b.id); if (!p) return send(res, 404, {}); p.likes = p.likes || []; const i = p.likes.indexOf(u.id); i < 0 ? p.likes.push(u.id) : p.likes.splice(i, 1); save(); send(res, 200, view(p, u)); },
   "POST /api/follow": async (req, res) => { const u = me(req); if (!u) return send(res, 401, {}); const b = await body(req); if (!db.users[b.id] || b.id === u.id) return send(res, 400, { error: "Can't follow that seller." }); u.following = u.following || []; const i = u.following.indexOf(b.id); i < 0 ? u.following.push(b.id) : u.following.splice(i, 1); save(); send(res, 200, { following: i < 0 }); },
   "POST /api/rate": async (req, res) => {
@@ -72,6 +67,13 @@ const routes = {
     if (!db.messages.some(m => (m.from === u.id && m.to === b.id) || (m.from === b.id && m.to === u.id))) return send(res, 400, { error: "Message the seller before rating them." });
     (db.ratings[b.id] = db.ratings[b.id] || {})[u.id] = n; save(); send(res, 200, rating(b.id));
   },
+  "GET /api/admin/reports": async (req, res) => {
+    const u = me(req); if (!isAdmin(u)) return send(res, 403, { error: "Admins only." });
+    const by = {}; db.reports.forEach(r => { (by[r.postId] = by[r.postId] || new Set()).add(r.by); });
+    const out = Object.keys(by).map(id => { const p = db.posts.find(x => x.id === id); return p && { id, count: by[id].size, name: p.title || p.name, seller: p.seller, price: p.price, photo: p.photo }; }).filter(Boolean).sort((a, b) => b.count - a.count);
+    send(res, 200, out);
+  },
+  "POST /api/admin/dismiss": async (req, res) => { const u = me(req); if (!isAdmin(u)) return send(res, 403, { error: "Admins only." }); const b = await body(req); db.reports = db.reports.filter(r => r.postId !== b.id); save(); send(res, 200, {}); },
   "POST /api/report": async (req, res) => { const u = me(req); if (!u) return send(res, 401, {}); const b = await body(req); db.reports.push({ postId: clean(b.postId, 40), by: u.id, at: Date.now() }); save(); send(res, 200, {}); },
   "POST /api/messages": async (req, res) => {
     const u = me(req); if (!u) return send(res, 401, { error: "Log in first." });
