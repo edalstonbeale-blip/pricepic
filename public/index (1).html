@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pricepic</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0f1b2d">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pricepic">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+:root{--bg:#eef2f0;--card:#fff;--text:#0f1b2d;--muted:#5b6877;--accent:#0f1b2d;--on:#fff;--border:#dce3e0;--good:#0b7a4b;--soft:#e4ebe8;--tag:#ffc400;--ink:#0f1b2d}
+@media (prefers-color-scheme:dark){:root{--bg:#0c1118;--card:#151c26;--text:#f2f5f4;--muted:#93a0ae;--accent:#ffc400;--on:#0f1b2d;--border:#243040;--good:#4ade80;--soft:#1d2733}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:"SF Pro Rounded",ui-rounded,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.45;padding-bottom:env(safe-area-inset-bottom,0)}
+main{max-width:620px;margin:0 auto;padding:18px 16px 96px}
+header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.word{font-size:1.6rem;font-weight:800;letter-spacing:-.03em}.word b{background:linear-gradient(transparent 62%,var(--tag) 62%)}
+h2{letter-spacing:-.02em;margin:6px 0 12px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:16px;margin-bottom:16px}
+.btn{display:block;width:100%;padding:12px;border-radius:14px;border:1px solid var(--border);background:var(--card);color:var(--text);font:inherit;font-weight:700;cursor:pointer;transition:transform .12s}
+.btn:active{transform:scale(.97)}.btn:focus-visible,input:focus-visible,textarea:focus-visible,.tabs button:focus-visible{outline:3px solid var(--tag);outline-offset:2px}
+.btn.p{background:var(--tag);color:#0f1b2d;border-color:var(--tag)}.btn:disabled{opacity:.5}.btn.s{width:auto;padding:8px 14px;font-size:.88rem}
+.row{display:flex;gap:10px;margin-top:10px}.row>*{flex:1}.muted{color:var(--muted);font-size:.88rem}.err{color:#dc2626}
+input,textarea,select{width:100%;padding:11px;border-radius:12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font:inherit}textarea{min-height:100px}
+label{display:block;font-size:.82rem;color:var(--muted);margin:12px 0 4px}
+.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom,0)}
+.tabs button{flex:1;padding:14px 4px;border:0;background:none;color:var(--muted);font:inherit;font-weight:700;cursor:pointer;border-top:3px solid transparent}.tabs button.on{color:var(--text);border-top-color:var(--tag)}
+.post{padding:0;overflow:hidden}.post .body{padding:14px 16px 16px}.pic{position:relative}.pic img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:var(--soft)}
+.tagp{position:absolute;left:12px;bottom:12px;background:var(--tag);color:#0f1b2d;font-weight:800;font-size:1.25rem;padding:6px 16px 6px 26px;clip-path:polygon(14px 0,100% 0,100% 100%,14px 100%,0 50%);box-shadow:0 2px 0 rgba(0,0,0,.2)}
+.tagp:before{content:"";position:absolute;left:11px;top:50%;width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:#0f1b2d}
+.post h3{margin:0 0 4px;font-size:1.1rem;letter-spacing:-.01em}
+.who{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0 8px}.stars{color:#e0a800;letter-spacing:1px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.acts .btn{flex:1;min-width:84px}
+.heart.on{color:#e11d48;border-color:#e11d48}.heart.pop span{display:inline-block;animation:pop .3s}@keyframes pop{50%{transform:scale(1.5)}}
+@media (prefers-reduced-motion:reduce){.heart.pop span{animation:none}.btn{transition:none}}
+.thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.thumbs div{aspect-ratio:1;border:2px dashed var(--border);border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.8rem}.thumbs img{width:100%;height:100%;object-fit:cover}
+.seg{display:flex;gap:6px;margin:12px 0}.seg button{flex:1;padding:9px 4px;border-radius:12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font:inherit;font-size:.88rem;cursor:pointer}.seg button.on{background:var(--tag);border-color:var(--tag);color:#0f1b2d;font-weight:800}
+.bar{position:relative;height:10px;border-radius:99px;background:var(--soft);margin:16px 6px 6px}.bar i{position:absolute;top:-5px;width:20px;height:20px;margin-left:-10px;border-radius:50%;background:var(--tag);border:3px solid var(--ink);transition:left .25s}
+.bl{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted)}
+.big{font-size:2.3rem;font-weight:800;letter-spacing:-.03em;color:var(--good)}
+.msg{max-width:80%;padding:9px 13px;border-radius:16px;margin:6px 0;background:var(--soft)}.msg.me{margin-left:auto;background:var(--tag);color:#0f1b2d}
+.th{padding:12px 0;border-top:1px solid var(--border);cursor:pointer}.th:first-child{border-top:0}.hide{display:none}
+.note{background:var(--soft);border-radius:12px;padding:10px;font-size:.82rem;margin-top:12px;color:var(--muted)}
+.rate button{border:0;background:none;font-size:1.6rem;color:#e0a800;cursor:pointer}
+</style></head><body><main>
+<header>
+<svg width="34" height="34" viewBox="0 0 34 34" aria-label="Pricepic logo"><rect width="34" height="34" rx="10" fill="#0f1b2d"/><path d="M9 12h3l1.5-2h7L22 12h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V13a1 1 0 0 1 1-1z" fill="none" stroke="#ffc400" stroke-width="1.8" stroke-linejoin="round"/><circle cx="17" cy="18" r="3.2" fill="none" stroke="#ffc400" stroke-width="1.8"/></svg>
+<div class="word">Price<b>pic</b></div><button class="btn s hide" id="out" style="margin-left:auto;width:auto">Log out</button></header>
+<div id="app"></div></main>
+<nav class="tabs hide" id="tabs"><button data-t="feed">Feed</button><button data-t="scan">Scan</button><button data-t="inbox">Inbox</button></nav>
+<script>
+const $=(s,p)=> (p||document).querySelector(s), app=$("#app");
+let user=null, photos=[], cur=null, strat="mid";
+const money=n=>"$"+(Math.round((Number(n)||0)*100)/100).toLocaleString();
+async function api(p,b){const r=await fetch("/api/"+p,b===undefined?{}:{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)});let j={};try{j=await r.json()}catch(e){}if(!r.ok)throw new Error(j.error||"Something went wrong");return j}
+function el(tag,props,...kids){const e=document.createElement(tag);Object.assign(e,props||{});kids.flat().forEach(k=>e.append(k));return e}
+function shrink(file,max,q){return new Promise((ok,no)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{const r=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*r;c.height=im.height*r;c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);ok(c.toDataURL("image/jpeg",q||.8))};im.onerror=()=>no(new Error("Could not read that image"));im.src=u})}
+
+/* ---------- auth ---------- */
+function authView(){app.textContent="";tabs(false);let mode="login";
+const card=el("div",{className:"card"}),msg=el("p",{className:"muted err"});
+const name=el("input",{placeholder:"Display name",autocomplete:"nickname"}),email=el("input",{type:"email",placeholder:"Email",autocomplete:"email"}),pw=el("input",{type:"password",placeholder:"Password (8+ characters)",autocomplete:"current-password"});
+const go=el("button",{className:"btn p",textContent:"Log in"}),sw=el("button",{className:"btn",textContent:"New here? Create an account"});
+const draw=()=>{name.classList.toggle("hide",mode==="login");go.textContent=mode==="login"?"Log in":"Create account";sw.textContent=mode==="login"?"New here? Create an account":"Have an account? Log in"};
+sw.onclick=()=>{mode=mode==="login"?"signup":"login";draw()};
+go.onclick=async()=>{try{user=await api(mode,{name:name.value,email:email.value,password:pw.value});start()}catch(e){msg.textContent=e.message}};
+card.append(el("h2",{textContent:"Snap it. Price it. Sell it."}),name,el("div",{style:"height:8px"}),email,el("div",{style:"height:8px"}),pw,el("div",{className:"row"},go),el("div",{className:"row"},sw),msg);app.append(card);draw()}
+
+/* ---------- shell ---------- */
+function tabs(on){if(!on){const a=document.querySelector('[data-t="admin"]');if(a)a.remove()}$("#tabs").classList.toggle("hide",!on);$("#out").classList.toggle("hide",!on)}
+$("#tabs").onclick=e=>{const t=e.target.dataset.t;if(t)show(t)};
+$("#out").onclick=async()=>{await api("logout",{});user=null;authView()};
+function show(t){document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));app.textContent="";({feed:feedView,scan:scanView,inbox:inboxView,admin:adminView})[t]()}
+function start(){tabs(true);if(user.admin&&!document.querySelector('[data-t="admin"]'))$("#tabs").append(el("button",{textContent:"Admin"},)),$("#tabs").lastChild.dataset.t="admin";show("feed")}
+
+/* ---------- feed (endless scroll) ---------- */
+function feedView(){let fol=false;const seg=el("div",{className:"seg"}),search=el("input",{placeholder:"Search items",type:"search"}),list=el("div"),sentinel=el("div",{className:"muted",style:"text-align:center;padding:16px"});
+[["All items",false],["Following",true]].forEach(([l,v])=>{const b=el("button",{textContent:l,className:v===fol?"on":""});b.onclick=()=>{fol=v;[...seg.children].forEach(x=>x.className=x===b?"on":"");reset()};seg.append(b)});
+app.append(el("div",{className:"card"},search,seg),list,sentinel);let next=Infinity,busy=false,done=false;
+async function more(){if(busy||done)return;busy=true;sentinel.textContent="Loading...";try{const r=await api("posts?q="+encodeURIComponent(search.value)+(fol?"&following=1":"")+(next===Infinity?"":"&before="+next));r.posts.forEach(p=>list.append(postCard(p)));next=r.next;if(!r.next){done=true;sentinel.textContent=list.children.length?"You're all caught up.":(fol?"Follow sellers to see their items here.":"No items yet. Scan something and share it to the feed.")}else sentinel.textContent=""}catch(e){sentinel.textContent=e.message}busy=false}
+function reset(){list.textContent="";next=Infinity;done=false;more()}
+new IntersectionObserver(es=>{if(es[0].isIntersecting)more()},{rootMargin:"400px"}).observe(sentinel);
+let t;search.oninput=()=>{clearTimeout(t);t=setTimeout(reset,300)};more()}
+function stars(r){return r.count?"\u2605".repeat(Math.round(r.avg))+" "+r.avg+" ("+r.count+")":"No ratings yet"}
+function postCard(p){const c=el("div",{className:"card post"}),mine=p.sellerId===user.id;
+const pic=el("div",{className:"pic"},el("img",{src:p.photo,alt:p.name,loading:"lazy"}),el("div",{className:"tagp",textContent:money(p.price)}));
+const who=el("div",{className:"who"},el("strong",{textContent:p.seller}),el("span",{className:"stars",textContent:stars(p.sellerRating)}));
+if(!mine){const f=el("button",{className:"btn s",textContent:p.following?"Following":"Follow"});f.onclick=async()=>{const r=await api("follow",{id:p.sellerId});f.textContent=r.following?"Following":"Follow"};who.append(f)}
+const like=el("button",{className:"btn heart"+(p.liked?" on":"")},el("span",{textContent:"\u2665"})," "+p.likeCount);
+like.onclick=async()=>{const r=await api("like",{id:p.id});like.className="btn heart pop"+(r.liked?" on":"");like.lastChild.textContent=" "+r.likeCount};
+const b=el("div",{className:"body"},el("h3",{textContent:p.title||p.name}),el("div",{className:"muted",textContent:p.condition||""}),who,el("p",{textContent:p.desc,style:"white-space:pre-wrap;margin:6px 0"}));
+const acts=el("div",{className:"acts"},like);
+if(mine){const d=el("button",{className:"btn",textContent:"Remove listing"});d.onclick=async()=>{await api("posts/delete",{id:p.id});c.remove()};acts.append(d)}
+else{const o=el("button",{className:"btn",textContent:"Make offer"}),m=el("button",{className:"btn p",textContent:"Message"}),r=el("button",{className:"btn",textContent:"Report"});
+o.onclick=async()=>{const a=Number((prompt("Your offer in dollars (asking "+money(p.price)+")")||"").replace(/[^0-9.]/g,""));if(!a)return;try{await api("messages",{postId:p.id,text:"Offer: "+money(a)+" for "+(p.title||p.name)});threadView(p.id,p.sellerId,p.seller,p.name)}catch(e){alert(e.message)}};
+m.onclick=()=>threadView(p.id,p.sellerId,p.seller,p.name);r.onclick=async()=>{await api("report",{postId:p.id});r.textContent="Reported";r.disabled=true};acts.append(o,m,r);if(user.admin){const x=el("button",{className:"btn",textContent:"Remove (admin)"});x.onclick=async()=>{if(confirm("Remove this listing?")){await api("posts/delete",{id:p.id});c.remove()}};acts.append(x)}b.append(acts,el("div",{className:"note",textContent:"Stay safe: never send money to someone you can't verify, and keep payment on trusted channels."}))}
+if(mine)b.append(acts);c.append(pic,b);return c}
+
+/* ---------- scan ---------- */
+function scanView(){photos=[];cur=null;const th=el("div",{className:"thumbs"}),lib=el("input",{type:"file",accept:"image/*",hidden:true}),cam=el("input",{type:"file",accept:"image/*",hidden:true}),addCam=el("button",{className:"btn",textContent:"Take photo"}),addLib=el("button",{className:"btn",textContent:"From library"}),note=el("input",{placeholder:"Model number, flaws, age (optional)"}),go=el("button",{className:"btn p",textContent:"Estimate value (AI scan)",disabled:true}),manual=el("button",{className:"btn",textContent:"Skip scan: enter details myself",disabled:true}),st=el("p",{className:"muted"}),res=el("div",{className:"card hide"});cam.setAttribute("capture","environment");
+const dt=()=>{th.textContent="";for(let i=0;i<3;i++)th.append(el("div",{},photos[i]?el("img",{src:photos[i]}):"Photo "+(i+1)));go.disabled=!photos.length;manual.disabled=!photos.length;addCam.disabled=addLib.disabled=photos.length>=3};
+const pick=inp=>async()=>{const f=inp.files[0];inp.value="";if(!f)return;try{photos.push(await shrink(f,1024));dt()}catch(e){st.textContent=e.message}};
+addCam.onclick=()=>cam.click();addLib.onclick=()=>lib.click();cam.onchange=pick(cam);lib.onchange=pick(lib);
+go.onclick=async()=>{go.disabled=true;st.className="muted";st.textContent="Analysing your photos...";try{cur=await api("scan",{images:photos,note:note.value});showRes(res);st.textContent=""}catch(e){st.className="muted err";st.textContent=/ANTHROPIC_API_KEY/.test(e.message)?"AI scanning isn't switched on yet. Tap \"Skip scan\" to enter the details yourself.":e.message}go.disabled=!photos.length};
+manual.onclick=()=>manualView(res);
+app.append(el("div",{className:"card"},th,lib,cam,el("div",{className:"row"},addCam,addLib),el("label",{textContent:"Anything we should know? (for the AI scan)"}),note,el("div",{className:"row"},go),el("div",{className:"row"},manual),st),res);dt()}
+function manualView(res){res.className="card";res.textContent="";
+const name=el("input",{placeholder:"What is it? e.g. Air Jordan 4 Retro, size 10",maxLength:100}),price=el("input",{type:"number",min:"0",step:"1",placeholder:"Price in dollars",inputMode:"decimal"}),cond=el("select",{},["New","Like new","Good","Fair"].map(c=>el("option",{textContent:c,value:c}))),desc=el("textarea",{placeholder:"Size, brand, any flaws, why you're selling",maxLength:1500}),share=el("button",{className:"btn p",textContent:"Share to feed"}),msg=el("p",{className:"muted"});
+share.onclick=async()=>{if(!name.value.trim()||price.value===""||!(Number(price.value)>=0)){msg.className="muted err";msg.textContent="Add a name and a price.";return}share.disabled=true;try{const photo=await shrinkData(photos[0]);await api("posts",{name:name.value,title:name.value.slice(0,80),desc:desc.value,price:Number(price.value),condition:cond.value,photo});msg.className="muted";msg.textContent="Shared! It's now in the feed."}catch(e){msg.className="muted err";msg.textContent=e.message;share.disabled=false}};
+res.append(el("strong",{textContent:"Your listing"}),el("label",{textContent:"Item name"}),name,el("label",{textContent:"Price ($)"}),price,el("label",{textContent:"Condition"}),cond,el("label",{textContent:"Description"}),desc,el("div",{className:"row"},share),msg);res.scrollIntoView({behavior:"smooth"})}
+function showRes(res){res.className="card";res.textContent="";const lo=Number(cur.low)||0,hi=Number(cur.high)||0,P={low:lo,mid:(lo+hi)/2,high:hi};
+const price=el("div",{className:"big"}),dot=el("i"),bar=el("div",{className:"bar"},dot),pr=()=>{price.textContent=money(P[strat]);dot.style.left=(hi>lo?(P[strat]-lo)/(hi-lo)*100:50)+"%"};
+const seg=el("div",{className:"seg"},[["low","Quick sale"],["mid","Market"],["high","Patient"]].map(([k,l])=>{const b=el("button",{textContent:l,className:k===strat?"on":""});b.onclick=()=>{strat=k;[...seg.children].forEach(x=>x.className=x===b?"on":"");pr()};return b}));
+const title=el("input",{value:(cur.ebay_title||cur.name||"").slice(0,80),maxLength:80}),desc=el("textarea",{value:cur.ebay_description||""});
+const copy=el("button",{className:"btn",textContent:"Copy for eBay"}),share=el("button",{className:"btn p",textContent:"Share to feed"}),msg=el("p",{className:"muted"});
+copy.onclick=async()=>{await navigator.clipboard.writeText(title.value+"\n\n"+desc.value+"\n\nAsking price: "+money(P[strat]));window.open("https://www.ebay.com/sl/sell","_blank","noopener");msg.textContent="Copied. Paste it into eBay's form."};
+share.onclick=async()=>{share.disabled=true;try{const photo=await shrinkData(photos[0]);await api("posts",{name:cur.name,title:title.value,desc:desc.value,price:P[strat],condition:cur.condition,photo});msg.textContent="Shared! It's now in the feed."}catch(e){msg.className="muted err";msg.textContent=e.message;share.disabled=false}};
+res.append(el("div",{className:"muted",textContent:"Estimated resale value"}),el("div",{className:"big",textContent:money(lo)+" – "+money(hi)}),el("strong",{textContent:cur.name}),el("div",{className:"muted",textContent:[cur.brand,cur.category,cur.condition,cur.confidence&&cur.confidence+" confidence"].filter(Boolean).join(" · ")}),el("p",{textContent:cur.reasoning||""}),el("div",{className:"muted",textContent:"Your list price"}),price,bar,el("div",{className:"bl"},el("span",{textContent:"Quick sale "+money(lo)}),el("span",{textContent:"Patient "+money(hi)})),seg,el("label",{textContent:"Title"}),title,el("label",{textContent:"Description"}),desc,el("div",{className:"row"},copy,share),msg,el("p",{className:"muted",textContent:"AI estimate, not a guaranteed price."}));pr()}
+function shrinkData(d){return new Promise(ok=>{const im=new Image();im.onload=()=>{const r=Math.min(1,640/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*r;c.height=im.height*r;c.getContext("2d").drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",.7))};im.src=d})}
+
+/* ---------- admin ---------- */
+async function adminView(){app.append(el("h2",{textContent:"Reported listings"}));const box=el("div");app.append(box);
+const list=await api("admin/reports");if(!list.length)box.append(el("div",{className:"card"},el("p",{className:"muted",textContent:"No reports right now."})));
+list.forEach(r=>{const c=el("div",{className:"card post"});
+const rm=el("button",{className:"btn p",textContent:"Remove listing"}),dm=el("button",{className:"btn",textContent:"Dismiss reports"});
+rm.onclick=async()=>{if(!confirm("Remove this listing?"))return;await api("posts/delete",{id:r.id});c.remove()};
+dm.onclick=async()=>{await api("admin/dismiss",{id:r.id});c.remove()};
+c.append(el("div",{className:"pic"},el("img",{src:r.photo,alt:r.name}),el("div",{className:"tagp",textContent:money(r.price)})),el("div",{className:"body"},el("h3",{textContent:r.name}),el("div",{className:"muted",textContent:"Sold by "+r.seller+" \u00b7 "+r.count+(r.count===1?" report":" reports")}),el("div",{className:"row"},rm,dm)));box.append(c)})}
+
+/* ---------- messages ---------- */
+async function inboxView(){app.append(el("h2",{textContent:"Messages"}));const box=el("div",{className:"card"});app.append(box);const list=await api("inbox");if(!list.length)box.append(el("p",{className:"muted",textContent:"No messages yet. Message a seller from the feed."}));
+list.forEach(t=>{const d=el("div",{className:"th"},el("strong",{textContent:t.otherName+" · "+t.item}),el("div",{className:"muted",textContent:t.last}));d.onclick=()=>threadView(t.postId,t.other,t.otherName,t.item);box.append(d)})}
+async function threadView(pid,other,name,item){app.textContent="";const back=el("button",{className:"btn s",textContent:"Back"}),box=el("div",{className:"card"}),input=el("input",{placeholder:"Write a message"}),send=el("button",{className:"btn p",textContent:"Send"}),err=el("p",{className:"muted err"});back.onclick=()=>show("inbox");
+const draw=async()=>{box.textContent="";const m=await api("thread?postId="+pid+"&other="+other);if(!m.length)box.append(el("p",{className:"muted",textContent:"Say hello and ask about the item."}));m.forEach(x=>box.append(el("div",{className:"msg"+(x.mine?" me":""),textContent:x.text})))};
+send.onclick=async()=>{if(!input.value.trim())return;try{await api("messages",{postId:pid,to:other,text:input.value});input.value="";err.textContent="";draw()}catch(e){err.textContent=e.message}};
+const rate=el("div",{className:"rate"},el("span",{className:"muted",textContent:"Rate this seller: "}));for(let i=1;i<=5;i++){const s=el("button",{textContent:"\u2605","aria-label":i+" stars"});s.onclick=async()=>{try{const r=await api("rate",{id:other,stars:i});err.className="muted";err.textContent="Thanks! "+name+" now has "+stars(r)}catch(e){err.className="muted err";err.textContent=e.message}};rate.append(s)}
+app.append(back,el("h3",{textContent:name+" · "+item}),box,rate,el("div",{className:"row"},input,send),err);draw()}
+
+if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));
+api("me").then(u=>{user=u;u?start():authView()}).catch(authView);
+</script></body></html>
